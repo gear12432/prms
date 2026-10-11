@@ -1,0 +1,6 @@
+{
+  "name": "phoneG - Coin Buy & Coin Send Application",
+  "description": "Easy way for all your coin transactions. Buy, send, and receive phoneG coins securely with real-time wallet tracking and identity verification.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

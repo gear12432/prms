@@ -1,0 +1,68 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Default deny all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(uid) {
+      return isSignedIn() && request.auth.uid == uid;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    // Users Collection
+    match /users/{userId} {
+      allow read: if isSignedIn();
+      allow create: if isOwner(userId);
+      allow update: if isOwner(userId);
+    }
+
+    // User Private Details
+    match /userPrivate/{userId} {
+      allow read: if isOwner(userId);
+      allow create: if isOwner(userId);
+      allow update: if isOwner(userId);
+    }
+
+    // User ID Lookup Mapping (PL18753 -> UID)
+    match /userIds/{publicId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn();
+    }
+
+    // KYC Records
+    match /kycRecords/{userId} {
+      allow read: if isOwner(userId);
+      allow create: if isOwner(userId);
+      allow update: if isOwner(userId);
+    }
+
+    // Wallets
+    match /wallets/{userId} {
+      allow read: if isOwner(userId);
+      allow create: if isOwner(userId);
+      allow update: if isOwner(userId);
+    }
+
+    // Transactions
+    match /transactions/{transactionId} {
+      allow read: if isSignedIn() && (
+        resource.data.senderUid == request.auth.uid || 
+        resource.data.recipientUid == request.auth.uid
+      );
+      allow create: if isSignedIn() && (
+        request.resource.data.senderUid == request.auth.uid ||
+        request.resource.data.recipientUid == request.auth.uid
+      );
+      allow update: if false; // Transactions are immutable once written
+    }
+  }
+}

@@ -1,0 +1,135 @@
+{
+  "entities": {
+    "User": {
+      "title": "User Profile",
+      "description": "Public and primary profile data of the user",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "userId": { "type": "string", "pattern": "^PL[0-9]{5}$" },
+        "firstName": { "type": "string", "maxLength": 50 },
+        "lastName": { "type": "string", "maxLength": 50 },
+        "mobileNumber": { "type": "string", "pattern": "^[0-9]{10}$" },
+        "email": { "type": "string" },
+        "profilePhotoPath": { "type": "string" },
+        "registrationStatus": { "type": "string", "enum": ["pending", "completed"] },
+        "accountStatus": { "type": "string", "enum": ["active", "suspended"] },
+        "kycStatus": { "type": "string", "enum": ["pending", "approved", "rejected"] },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" },
+        "lastLoginAt": { "type": "string" }
+      },
+      "required": ["uid", "userId", "firstName", "lastName", "mobileNumber", "email", "registrationStatus", "kycStatus"]
+    },
+    "UserPrivate": {
+      "title": "Private User Details",
+      "description": "Sensitive address and KYC information reserved for owner access",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "address": { "type": "string", "maxLength": 250 },
+        "state": { "type": "string", "maxLength": 50 },
+        "district": { "type": "string", "maxLength": 50 },
+        "pinCode": { "type": "string", "pattern": "^[0-9]{6}$" },
+        "city": { "type": "string", "maxLength": 50 },
+        "panNumber": { "type": "string", "pattern": "^[A-Z]{5}[0-9]{4}[A-Z]{1}$" },
+        "aadhaarNumber": { "type": "string", "pattern": "^[0-9]{12}$" },
+        "panDocumentPath": { "type": "string" },
+        "aadhaarFrontPath": { "type": "string" },
+        "aadhaarBackPath": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["uid"]
+    },
+    "UserIdLookup": {
+      "title": "Public User ID Lookup",
+      "description": "Mapping from PLxxxxx public ID to UID for secure lookup",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "userId": { "type": "string" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["uid", "userId"]
+    },
+    "KycRecord": {
+      "title": "KYC Record",
+      "description": "Submitted KYC documents and verification status",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "userId": { "type": "string" },
+        "panNumber": { "type": "string" },
+        "aadhaarNumber": { "type": "string" },
+        "panDocumentPath": { "type": "string" },
+        "aadhaarFrontPath": { "type": "string" },
+        "aadhaarBackPath": { "type": "string" },
+        "kycStatus": { "type": "string", "enum": ["pending", "approved", "rejected"] },
+        "submittedAt": { "type": "string" },
+        "reviewedAt": { "type": "string" }
+      },
+      "required": ["uid", "kycStatus"]
+    },
+    "Wallet": {
+      "title": "User Wallet",
+      "description": "Coin balance and metadata for user",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "userId": { "type": "string" },
+        "coinBalance": { "type": "number" },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["uid", "coinBalance"]
+    },
+    "Transaction": {
+      "title": "Wallet Transaction",
+      "description": "Records of buy, send, and receive coin operations",
+      "type": "object",
+      "properties": {
+        "transactionId": { "type": "string" },
+        "senderUid": { "type": "string" },
+        "senderUserId": { "type": "string" },
+        "recipientUid": { "type": "string" },
+        "recipientUserId": { "type": "string" },
+        "transactionType": { "type": "string", "enum": ["buy", "send", "receive"] },
+        "coinAmount": { "type": "number" },
+        "fee": { "type": "number" },
+        "amountInINR": { "type": "number" },
+        "paymentMethod": { "type": "string" },
+        "status": { "type": "string", "enum": ["completed", "pending", "failed"] },
+        "createdAt": { "type": "string" },
+        "description": { "type": "string" },
+        "referenceNo": { "type": "string" }
+      },
+      "required": ["transactionId", "transactionType", "coinAmount", "status", "createdAt"]
+    }
+  },
+  "firestore": {
+    "users/{firebaseUid}": {
+      "schema": "#/entities/User",
+      "description": "User profile collection indexed by Firebase Auth UID"
+    },
+    "userPrivate/{firebaseUid}": {
+      "schema": "#/entities/UserPrivate",
+      "description": "Private sensitive details for the authenticated user"
+    },
+    "userIds/{publicUserId}": {
+      "schema": "#/entities/UserIdLookup",
+      "description": "PLxxxxx public User ID mapping collection"
+    },
+    "kycRecords/{firebaseUid}": {
+      "schema": "#/entities/KycRecord",
+      "description": "KYC records for verification tracking"
+    },
+    "wallets/{firebaseUid}": {
+      "schema": "#/entities/Wallet",
+      "description": "Coin wallet collection per user"
+    },
+    "transactions/{transactionId}": {
+      "schema": "#/entities/Transaction",
+      "description": "Transaction log collection"
+    }
+  }
+}
